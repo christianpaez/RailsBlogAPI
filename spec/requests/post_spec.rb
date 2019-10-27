@@ -29,4 +29,77 @@ RSpec.describe "Posts endpoint", type: :request do
                 end
             end
     end 
+
+    describe "POST /posts" do
+        let!(:user) {create(:user)}
+            it "Should create a post" do
+                req_payload = {
+                    post: {
+                    title: "titulo", 
+                    content: "contenido",
+                    published: false,
+                    user_id: user.id
+                    }
+                }
+                post "/posts"
+                payload = JSON.parse(response.body)
+                expect(payload).to_not be_empty
+                expect(payload[:id]).to_not be_empty
+                expect(response).to have_http_status(:created)
+            end
+
+            it "Should return an error message on invalid post" do
+                #NO TITLE PAYLOAD
+                req_payload = {
+                    post: {
+                    content: "contenido",
+                    published: false,
+                    user_id: user.id
+                    }
+                }
+                post "/posts"
+                payload = JSON.parse(response.body)
+                expect(payload).to_not be_empty
+                expect(payload[:error]).to_not be_empty
+                expect(response).to have_http_status(:unprocessable_entity)
+            end
+    end 
+    describe "PUT /posts" do
+        let!(:article) {create(:post)}
+            it "Should update a post" do
+                req_payload = {
+                    post: {
+                    title: "titulo", 
+                    content: "contenido",
+                    published: false,
+                    }
+                }
+                put "/posts/#{article.id}", params: req_payload
+                payload = JSON.parse(response.body)
+                expect(payload).to_not be_empty
+                expect(payload[:id]).to eq(article.id)
+                expect(response).to have_http_status(:ok)
+            end
+            it "Should return an error message on invalid post" do
+                #NIL PAYLOAD
+                req_payload = {
+                    post: {
+                    title: nil,
+                    content: nil,
+                    published: false,
+                    }
+                }
+                 put "/posts/#{article.id}", params: req_payload
+                 payload = JSON.parse(response.body)
+                 expect(payload).to_not be_empty
+                 expect(payload[:error]).to eq(article.id)
+                 expect(response).to have_http_status(:unprocessable_entity)
+            end
+    end 
 end
+
+
+
+
+
+

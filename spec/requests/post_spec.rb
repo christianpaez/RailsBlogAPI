@@ -26,6 +26,12 @@ RSpec.describe "Posts endpoint", type: :request do
                         payload = JSON.parse(response.body)
                         expect(payload).not_to be_empty
                         expect(payload['id']).to eq(post.id)
+                        expect(payload['title']).to eq(post.title)
+                        expect(payload['content']).to eq(post.content)
+                        expect(payload['published']).to eq(post.published)
+                        expect(payload['author']["name"]).to eq(post.author.name)
+                        expect(payload['author']["email"]).to eq(post.author.email)
+                        expect(payload['author']["id"]).to eq(post.author.id)
                         expect(response).to have_http_status(200)
                     end
                 end
@@ -99,6 +105,21 @@ RSpec.describe "Posts endpoint", type: :request do
             end
     end 
 end
+
+=begin 
+describe "Search Posts" do
+    let!(:first_post) { create(:post, title:"Post first", published: true) }
+    let!(:second_post) { create(:post, title:"Post second", published: true) }
+    let!(:third) { create(:post, title:"third", published: true) }
+    it "should filter posts by title" do 
+        get '/posts?search=Post'
+        payload = JSON.parse(response.body)
+        expect(payload).to_not be_empty
+        expect(payload).size.to eq(2)
+        expect(payload.map {|p| p.id}.sort).to eq([first_post.id, second_post.id].sort)
+        expect(response).to have_http_status(200)
+    end
+end =end
 
 
 

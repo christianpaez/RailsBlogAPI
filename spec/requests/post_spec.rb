@@ -3,12 +3,27 @@ require 'byebug'
 
 RSpec.describe "Posts endpoint", type: :request do
     describe "GET /posts" do
-        before { get '/posts'}
             it "Should return 200 Status code" do
+                get '/posts'
                 payload = JSON.parse(response.body)
                 expect(payload).to be_empty
                 expect(response).to have_http_status(200)
             end
+
+            
+            describe "Search Posts" do
+                let!(:first_post) { create(:post, title:"Post first", published: true) }
+                let!(:second_post) { create(:post, title:"Post second", published: true) }
+                let!(:third) { create(:post, title:"third", published: true) }
+                it "should filter posts by title" do 
+                    get '/posts?search=Post'
+                    payload = JSON.parse(response.body)
+                    expect(payload).to_not be_empty
+                    expect(payload.size).to eq(2)
+                    expect(payload.map {|p| p["id"]}.sort).to eq([first_post.id, second_post.id].sort)
+                    expect(response).to have_http_status(200)
+                end
+            end 
 
             describe "with data in the database" do
                 let!(:posts) { create_list(:post, 10, published: true)}
@@ -20,12 +35,23 @@ RSpec.describe "Posts endpoint", type: :request do
 
                 end
                 describe "GET /posts/:id" do
-                    let!(:post) { create(:post)}
-                    before { get "/posts/#{post.id}" }
+                    #let!(:post) { create(:post)}
+                    post = {
+                        title: "titulo",
+                        id: 1,
+                        content: "contenido",
+                        published: true,
+                        author: {
+                            id: 1, 
+                            email: "email",
+                            name: "name"
+                        }
+                    }
+                    before { get "/posts/#{post[:id]}" }
                     it "Should return a single post" do
                         payload = JSON.parse(response.body)
                         expect(payload).not_to be_empty
-                        expect(payload['id']).to eq(post.id)
+                        expect(payload['id']).to eq(post[:id])
                         expect(payload['title']).to eq(post.title)
                         expect(payload['content']).to eq(post.content)
                         expect(payload['published']).to eq(post.published)
@@ -105,21 +131,6 @@ RSpec.describe "Posts endpoint", type: :request do
             end
     end 
 end
-
-=begin 
-describe "Search Posts" do
-    let!(:first_post) { create(:post, title:"Post first", published: true) }
-    let!(:second_post) { create(:post, title:"Post second", published: true) }
-    let!(:third) { create(:post, title:"third", published: true) }
-    it "should filter posts by title" do 
-        get '/posts?search=Post'
-        payload = JSON.parse(response.body)
-        expect(payload).to_not be_empty
-        expect(payload).size.to eq(2)
-        expect(payload.map {|p| p.id}.sort).to eq([first_post.id, second_post.id].sort)
-        expect(response).to have_http_status(200)
-    end
-end =end
 
 
 

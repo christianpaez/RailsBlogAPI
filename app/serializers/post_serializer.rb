@@ -1,5 +1,5 @@
 class PostSerializer < ActiveModel::Serializer
-  attributes :id, :title, :content, , :published, :author
+  attributes :id, :title, :content , :published, :author
   def author
     user = self.object.user
     {
